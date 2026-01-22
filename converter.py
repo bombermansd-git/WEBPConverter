@@ -1,8 +1,7 @@
 import sys
 import os
-import shutil
-import platform
 import subprocess
+import imageio_ffmpeg
 from pathlib import Path
 
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
@@ -151,8 +150,9 @@ class ConversionWorker(QThread):
 
     def run(self):
         try:
+            # Platform specific flags to hide console window on Windows
             startupinfo = None
-            if platform.system() == "Windows":
+            if sys.platform == "win32":
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             subprocess.run(self.cmd, check=True, startupinfo=startupinfo)
@@ -168,8 +168,9 @@ class WebPConverterApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Video to WEBP Converter")
         self.resize(550, 850) 
+
+        self.ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
         
-        self.ffmpeg_path = None
         self.home_dir = str(Path.home())
         self.current_dir = self.home_dir
         self.last_output_file = None
@@ -177,7 +178,7 @@ class WebPConverterApp(QMainWindow):
         # Player State
         self.duration_ms = 0
         self.is_playing = False
-        self.is_muted = True # Default to muted
+        self.is_muted = True
 
         # Setup Main Container
         central_widget = QWidget()
@@ -190,9 +191,6 @@ class WebPConverterApp(QMainWindow):
         self._apply_dark_theme()
         self._build_ui()
         self._setup_player()
-        
-        QThread.msleep(100)
-        self._check_ffmpeg()
 
     def _apply_dark_theme(self):
         self.setStyleSheet("""
@@ -259,7 +257,6 @@ class WebPConverterApp(QMainWindow):
         self.video_widget = QVideoWidget()
         self.video_widget.setStyleSheet("background-color: black;")
         self.video_stack.addWidget(self.video_widget)
-        
         vbox_video.addWidget(self.video_stack_widget, stretch=1)
         
         # 2. Controls
@@ -281,14 +278,14 @@ class WebPConverterApp(QMainWindow):
         
         # Play Button
         self.btn_play = QPushButton("Play Preview")
-        self.btn_play.setFixedSize(120, 36) # Fixed Height 36
+        self.btn_play.setFixedSize(120, 36)
         self.btn_play.clicked.connect(self._toggle_playback)
         self.btn_play.setEnabled(False)
         btn_layout.addWidget(self.btn_play)
         
         # Mute Button (Square, same height as Play)
         self.btn_mute = QPushButton()
-        self.btn_mute.setFixedSize(36, 36) # 36x36 Square
+        self.btn_mute.setFixedSize(36, 36)
         # Use resource_path for PyInstaller compatibility
         self.btn_mute.setIcon(QIcon(resource_path("muted.png"))) 
         self.btn_mute.setIconSize(QSize(20, 20))
@@ -307,31 +304,25 @@ class WebPConverterApp(QMainWindow):
         settings_frame.setObjectName("SettingsBox")
         settings_layout = QVBoxLayout(settings_frame)
         settings_layout.setContentsMargins(20, 20, 20, 20)
-
         lbl_settings = QLabel("Configuration")
         lbl_settings.setObjectName("Header")
         settings_layout.addWidget(lbl_settings)
-
         grid = QGridLayout()
         grid.setVerticalSpacing(15)
-        
         self.chk_loop = QCheckBox("Loop Animation Indefinitely")
         self.chk_loop.setChecked(True)
         grid.addWidget(self.chk_loop, 0, 0, 1, 2) 
-
         lbl_scale = QLabel("Scale Height (px):")
         self.txt_scale = QLineEdit("480")
         self.txt_scale.editingFinished.connect(lambda: self._validate_entry(self.txt_scale, "480"))
         grid.addWidget(lbl_scale, 1, 0)
         grid.addWidget(self.txt_scale, 1, 1)
-
         lbl_fps = QLabel("Frame Rate (FPS):")
         self.txt_fps = QLineEdit("24")
         self.txt_fps.editingFinished.connect(lambda: self._validate_entry(self.txt_fps, "24"))
         grid.addWidget(lbl_fps, 2, 0)
         grid.addWidget(self.txt_fps, 2, 1)
         grid.setColumnStretch(2, 1) 
-
         settings_layout.addLayout(grid)
         self.main_layout.addWidget(settings_frame)
 
@@ -347,7 +338,6 @@ class WebPConverterApp(QMainWindow):
     def _toggle_mute(self):
         self.is_muted = not self.is_muted
         self.audio_output.setMuted(self.is_muted)
-        
         if self.is_muted:
             self.btn_mute.setIcon(QIcon(resource_path("muted.png")))
         else:
@@ -358,9 +348,7 @@ class WebPConverterApp(QMainWindow):
         self.audio_output = QAudioOutput() 
         self.media_player.setAudioOutput(self.audio_output)
         self.media_player.setVideoOutput(self.video_widget)
-        
         self.audio_output.setMuted(True) 
-        
         self.media_player.durationChanged.connect(self._media_duration_changed)
         self.media_player.positionChanged.connect(self._media_position_changed)
         self.media_player.errorOccurred.connect(self._media_error)
@@ -393,7 +381,6 @@ class WebPConverterApp(QMainWindow):
             start_ms, end_ms = self.range_slider.get_range()
             if self.media_player.position() >= end_ms or self.media_player.position() < start_ms:
                 self.media_player.setPosition(start_ms)
-            
             self.media_player.play()
             self.btn_play.setText("Pause") 
 
@@ -404,10 +391,8 @@ class WebPConverterApp(QMainWindow):
 
     def _media_position_changed(self, position):
         start_ms, end_ms = self.range_slider.get_range()
-        
         if position >= end_ms and self.media_player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             self.media_player.setPosition(start_ms)
-        
         self._update_time_label()
 
     def _on_range_changed(self, start, end):
@@ -427,32 +412,20 @@ class WebPConverterApp(QMainWindow):
         if not widget.text().strip():
             widget.setText(default_val)
 
-    def _check_ffmpeg(self):
-        if shutil.which("ffmpeg") or shutil.which("ffmpeg", path=os.getcwd()):
-            self.ffmpeg_path = shutil.which("ffmpeg") or shutil.which("ffmpeg", path=os.getcwd())
-        else:
-            QMessageBox.warning(self, "FFMPEG Missing", "FFMPEG not found. Install it to convert.")
-            self.btn_convert.setEnabled(False)
-
     def _start_conversion(self):
-        if not self.ffmpeg_path: return
-
+        # We assume self.ffmpeg_path is valid because imageio-ffmpeg manages it
         input_file = self.path_input.text()
         if not input_file: return
-
         p = Path(input_file)
         output_file = p.with_suffix('.webp')
         self.last_output_file = str(output_file)
-
         scale = self.txt_scale.text()
         fps = self.txt_fps.text()
         loop = self.chk_loop.isChecked()
         loop_val = "0" if loop else "1"
-
         start_ms, end_ms = self.range_slider.get_range()
         start_sec = start_ms / 1000.0
         duration_sec = (end_ms - start_ms) / 1000.0
-
         cmd = [
             self.ffmpeg_path,
             "-ss", str(start_sec),
@@ -464,10 +437,8 @@ class WebPConverterApp(QMainWindow):
             str(output_file),
             "-y"
         ]
-
         self.btn_convert.setEnabled(False)
         self.btn_convert.setText("Converting...")
-        
         self.worker = ConversionWorker(cmd)
         self.worker.finished.connect(self._conversion_success)
         self.worker.error.connect(self._conversion_error)
@@ -495,12 +466,10 @@ class WebPConverterApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
     if hasattr(Qt.ApplicationAttribute, 'AA_EnableHighDpiScaling'):
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
     if hasattr(Qt.ApplicationAttribute, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
-
     window = WebPConverterApp()
     window.show()
     sys.exit(app.exec())
