@@ -11,3 +11,5 @@ WebPConverter
 dist/
 build/
 backups/
+releases/
+*.tar.gz
