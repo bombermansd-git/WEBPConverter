@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Name of the virtual environment folder
+VENV_DIR="venv"
+
 # Check if a version number was provided
 if [ -z "$1" ]; then
   echo "Error: Please provide a version number."
@@ -13,6 +16,7 @@ EXE_PATH="dist/WEBPConverter"
 
 # Activate venv
 source $VENV_DIR/bin/activate
+pip install pyinstaller
 pyinstaller --noconsole --onefile --add-data "mute_button.png:." --add-data "muted.png:." --name "${APP_NAME}" converter.py
 
 # 1. Create the filename

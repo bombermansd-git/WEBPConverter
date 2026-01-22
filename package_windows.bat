@@ -19,6 +19,7 @@ set EXE_NAME=WEBPConverter.exe
 call %VENV_DIR%\Scripts\activate.bat
 
 :: Generate self-contained executable
+pip install pyinstaller
 pyinstaller --noconsole --onefile --add-data "mute_button.png;." --add-data "muted.png;." --name "%APP_NAME%" converter.py
 
 :: 1. Create the filename
