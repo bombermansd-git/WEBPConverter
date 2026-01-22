@@ -12,7 +12,7 @@ The application serves as a user-friendly frontend for FFMPEG, offering features
 * **Trimming:** Visual double-ended slider to select specific start and end times for the output loop.
 * **Mute Toggle:** Preview videos with or without sound.
 * **Custom Settings:** Control output scale (height), frame rate (FPS), and looping behavior.
-* **Auto-Dependency:** Automatically detects if FFMPEG is missing and offers to download/install it (Windows) or provides install instructions (Linux/Mac).
+* **Auto-Dependency:** Uses imageio_ffmpeg package for automatic download and integration with ffmpeg.
 
 ## Installation & Usage
 
@@ -35,26 +35,31 @@ If you are a developer or want to run the raw Python script:
     cd WEBPConverter
     ```
 3.  **Set up Virtual Environment:**
-    * **Windows:** `launch.bat` (Automatically creates venv and installs deps)
+    * **Windows:** `launch.bat` (Automatically creates venvm, installs dependencies, and launches application)
     * **Linux/Mac:** `./launch.sh`
-4.  **Manual Install:**
-    ```bash
-    pip install -r requirements.txt
-    python converter.py
-    ```
 
 ## Building the Executable
 
 To package the application into a standalone file, use **PyInstaller**.
 
+1.  Start Virtual Environment:
+    * **Windows:**
+        ```cmd
+        venv/Scripts/activate.bat
+        ```
+    * **Linux/Mac:**
+        ```bash
+        source venv/bin/activate
+        ```
+
 1.  Install PyInstaller:
-    ```bash
+    ```cmd / bash
     pip install pyinstaller
     ```
 
 2.  Run the build command:
     * **Windows:**
-        ```bash
+        ```cmd
         pyinstaller --noconsole --onefile --add-data "mute_button.png;." --add-data "muted.png;." --name "WEBPConverter" converter.py
         ```
     * **Linux/Mac:**
@@ -69,7 +74,7 @@ To package the application into a standalone file, use **PyInstaller**.
 * **Language:** Python 3
 * **GUI Framework:** PyQt6
 * **Multimedia:** PyQt6-Multimedia & PyQt6-MultimediaWidgets
-* **Conversion Engine:** FFMPEG
+* **Conversion Engine:** FFMPEG via imageio_ffmpeg
 
 ## License
 
