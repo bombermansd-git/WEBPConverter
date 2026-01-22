@@ -1,0 +1,13 @@
+# .gitignore content
+
+# Python artifacts
+__pycache__/
+*.pyc
+venv/
+.env
+
+# The Self-Contained Executable (Do not upload to code repo)
+WebPConverter
+dist/
+build/
+backups/
