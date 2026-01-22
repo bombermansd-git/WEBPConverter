@@ -31,8 +31,8 @@ If you are a developer or want to run the raw Python script:
 1.  **Prerequisites:** Ensure you have Python 3.10+ installed.
 2.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/](https://github.com/)[YourUsername]/VideoToWEBPConverter.git
-    cd VideoToWEBPConverter
+    git clone https://github.com/bombermansd-git/WEBPConverter.git
+    cd WEBPConverter
     ```
 3.  **Set up Virtual Environment:**
     * **Windows:** `launch.bat` (Automatically creates venv and installs deps)
