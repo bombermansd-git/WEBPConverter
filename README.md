@@ -55,11 +55,11 @@ To package the application into a standalone file, use **PyInstaller**.
 2.  Run the build command:
     * **Windows:**
         ```bash
-        pyinstaller --noconsole --onefile --add-data "mute_button.png;." --add-data "muted.png;." --name "WebPConverter" converter.py
+        pyinstaller --noconsole --onefile --add-data "mute_button.png;." --add-data "muted.png;." --name "WEBPConverter" converter.py
         ```
     * **Linux/Mac:**
         ```bash
-        pyinstaller --noconsole --onefile --add-data "mute_button.png:." --add-data "muted.png:." --name "WebPConverter" converter.py
+        pyinstaller --noconsole --onefile --add-data "mute_button.png:." --add-data "muted.png:." --name "WEBPConverter" converter.py
         ```
 
 3.  The executable will appear in the `dist/` folder.
