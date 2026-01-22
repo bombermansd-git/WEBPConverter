@@ -13,3 +13,4 @@ build/
 backups/
 releases/
 *.tar.gz
+*.exe
