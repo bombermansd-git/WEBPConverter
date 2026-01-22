@@ -35,7 +35,7 @@ If you are a developer or want to run the raw Python script:
     cd WEBPConverter
     ```
 3.  **Set up Virtual Environment:**
-    * **Windows:** `launch.bat` (Automatically creates venvm, installs dependencies, and launches application)
+    * **Windows:** `launch.bat` (Automatically creates venv, installs dependencies, and launches application)
     * **Linux/Mac:** `./launch.sh`
 
 ## Building the Executable
